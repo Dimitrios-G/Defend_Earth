@@ -3,102 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Earth Defender - Mobile Max</title>
+    <title>Earth Defender - Pro Graphics</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-        
-        body { 
-            margin: 0; 
-            padding: 0;
-            background: #000; 
-            color: #0f6; 
-            font-family: 'Press Start 2P', cursive; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh; 
-            width: 100vw;
-            overflow: hidden; 
-            touch-action: none; 
-        }
-
-        #frame { 
-            width: 100%; 
-            height: 100%; 
-            display: flex; 
-            flex-direction: column; 
-            background: #000;
-            border: none; /* Αφαιρούμε το εξωτερικό border για περισσότερο χώρο */
-        }
-
-        .main-title { 
-            text-align: center; 
-            font-size: 14px; 
-            padding: 5px; 
-            border-bottom: 1px solid #0f6; 
-            flex-shrink: 0;
-        }
-        
-        header { 
-            display: flex; 
-            flex-wrap: wrap;
-            gap: 2px; 
-            padding: 5px; 
-            font-size: 7px; 
-            justify-content: space-around; 
-            border-bottom: 1px solid #0f6; 
-            flex-shrink: 0;
-            background: rgba(0, 20, 0, 0.5);
-        }
-
+        body { margin: 0; padding: 0; background: #000; color: #0f6; font-family: 'Press Start 2P', cursive; display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; overflow: hidden; touch-action: none; }
+        #frame { width: 100%; height: 100%; display: flex; flex-direction: column; background: #000; }
+        .main-title { text-align: center; font-size: 14px; padding: 5px; border-bottom: 1px solid #0f6; flex-shrink: 0; }
+        header { display: flex; flex-wrap: wrap; gap: 2px; padding: 5px; font-size: 7px; justify-content: space-around; border-bottom: 1px solid #0f6; flex-shrink: 0; background: rgba(0, 20, 0, 0.5); }
         .stat-item { padding: 3px; }
         #uiLives { color: #ff0000; }
-        
-        #gamearea { 
-            flex: 1; 
-            position: relative; 
-            overflow: hidden; 
-            background: #000;
-        }
-
-        canvas { 
-            display: block; 
-            width: 100%; 
-            height: 100%; 
-            touch-action: none;
-        }
-
-        footer { 
-            display: flex; 
-            justify-content: center; 
-            gap: 10px; 
-            padding: 5px; 
-            border-top: 1px solid #0f6; 
-            flex-shrink: 0;
-        }
-
-        .btn-retro { 
-            background: #000; 
-            color: #0f6; 
-            border: 1px solid #0f6; 
-            padding: 5px 10px; 
-            font-family: inherit; 
-            font-size: 8px; 
-            cursor: pointer; 
-        }
-
-        .overlay { 
-            position: absolute; 
-            inset: 0; 
-            background: rgba(0,0,0,0.95); 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            align-items: center; 
-            z-index: 100; 
-            text-align: center; 
-        }
-
+        #gamearea { flex: 1; position: relative; overflow: hidden; background: #000; }
+        canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+        footer { display: flex; justify-content: center; gap: 10px; padding: 5px; border-top: 1px solid #0f6; flex-shrink: 0; }
+        .btn-retro { background: #000; color: #0f6; border: 1px solid #0f6; padding: 5px 10px; font-family: inherit; font-size: 8px; cursor: pointer; }
+        .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; text-align: center; }
         input { background: #000; border: 1px solid #0f6; color: #0f6; padding: 10px; text-align: center; font-family: inherit; margin-bottom: 10px; outline: none; }
     </style>
 </head>
@@ -169,7 +87,7 @@ function playShootSound() {
     const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
     osc.type = 'triangle'; osc.frequency.setValueAtTime(400, audioCtx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1);
-    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
     osc.connect(gain); gain.connect(audioCtx.destination);
     osc.start(); osc.stop(audioCtx.currentTime + 0.1);
@@ -179,7 +97,7 @@ function playExplodeSound() {
     const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
     osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, audioCtx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + 0.3);
-    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
     gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
     osc.connect(gain); gain.connect(audioCtx.destination);
     osc.start(); osc.stop(audioCtx.currentTime + 0.3);
@@ -193,7 +111,7 @@ function startMusic() {
         if (!isPaused) {
             const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
             osc.type = 'sine'; osc.frequency.setValueAtTime(notes[step % notes.length], audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
             osc.connect(gain); gain.connect(audioCtx.destination);
             osc.start(); osc.stop(audioCtx.currentTime + 0.5);
@@ -204,10 +122,10 @@ function startMusic() {
     playStep();
 }
 
-function createExplosion(x, y, color, count = 15) {
+function createExplosion(x, y, color, count = 25) {
     playExplodeSound();
     for(let i=0; i<count; i++) {
-        state.particles.push({ x: x, y: y, vx: (Math.random()-0.5)*12, vy: (Math.random()-0.5)*12, life: 30, color: color });
+        state.particles.push({ x: x, y: y, vx: (Math.random()-0.5)*12, vy: (Math.random()-0.5)*12, life: 40, color: color });
     }
 }
 
@@ -271,7 +189,7 @@ function update() {
         }
         let dist = en.boss ? 80 : 35;
         if(Math.abs(en.x+(en.boss?125:20)-(state.player.x+20)) < dist && Math.abs(en.y+(en.boss?50:20)-(state.player.y+30)) < dist) {
-            if(state.shield <= 0) { state.lives--; createExplosion(state.player.x+20, state.player.y+30, '#f00', 30); if(state.lives <= 0) endGame(); state.shield = 100; }
+            if(state.shield <= 0) { state.lives--; createExplosion(state.player.x+20, state.player.y+30, '#f00', 50); if(state.lives <= 0) endGame(); state.shield = 100; }
         }
     });
 
@@ -295,7 +213,7 @@ function update() {
     state.enemyBullets.forEach((eb, ebi) => {
         eb.y += eb.vy;
         if(Math.abs(eb.x - (state.player.x+20)) < 25 && Math.abs(eb.y - (state.player.y+30)) < 25) {
-            if(state.shield <= 0) { state.lives--; createExplosion(state.player.x+20, state.player.y+30, '#f00', 30); if(state.lives <= 0) endGame(); state.shield = 100; }
+            if(state.shield <= 0) { state.lives--; createExplosion(state.player.x+20, state.player.y+30, '#f00', 40); if(state.lives <= 0) endGame(); state.shield = 100; }
             state.enemyBullets.splice(ebi, 1);
         }
         if(eb.y > 650) state.enemyBullets.splice(ebi, 1);
@@ -325,16 +243,30 @@ function updateUI() {
 function draw() {
     ctx.fillStyle = '#000'; ctx.fillRect(0,0,950,600);
     ctx.fillStyle = '#fff'; state.stars.forEach(s => ctx.fillRect(s.x, s.y, 2, 2));
+    
     if(state.shield > 0) { ctx.strokeStyle = '#0cf'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(state.player.x+20, state.player.y+30, 45, 0, Math.PI*2); ctx.stroke(); }
+    
+    // Player
     ctx.fillStyle = '#0f6'; ctx.beginPath(); ctx.moveTo(state.player.x+20, state.player.y); ctx.lineTo(state.player.x+40, state.player.y+45); ctx.lineTo(state.player.x+30, state.player.y+38); ctx.lineTo(state.player.x+10, state.player.y+38); ctx.lineTo(state.player.x, state.player.y+45); ctx.fill();
+    ctx.fillStyle = Math.random() > 0.5 ? '#f60' : '#ff0'; ctx.fillRect(state.player.x+16, state.player.y+40, 8, warping?30:12);
+    
+    // Enemies
     state.enemies.forEach(en => {
         ctx.fillStyle = en.boss ? '#f0f' : '#f04'; ctx.beginPath(); ctx.ellipse(en.x+(en.boss?125:20), en.y+(en.boss?50:15), en.boss?120:20, en.boss?40:10, 0, 0, Math.PI*2); ctx.fill();
-        if(en.boss) { ctx.fillStyle = '#fff'; ctx.fillRect(en.x, en.y-10, (en.hp/en.mhp)*250, 4); }
+        ctx.fillStyle = '#0ff'; ctx.beginPath(); ctx.arc(en.x+(en.boss?125:20), en.y+(en.boss?40:10), en.boss?40:10, 0, Math.PI, true); ctx.fill();
+        if(en.boss) { ctx.fillStyle = '#fff'; ctx.fillRect(en.x, en.y-20, (en.hp/en.mhp)*250, 8); }
     });
+    
     state.enemyBullets.forEach(eb => { ctx.fillStyle = '#ff0'; ctx.beginPath(); ctx.arc(eb.x, eb.y, 5, 0, Math.PI*2); ctx.fill(); });
-    state.powerups.forEach(p => { ctx.fillStyle = p.t==='P' ? '#ff0' : '#0cf'; ctx.fillRect(p.x, p.y, 30, 30); });
+    
+    // Powerups with Labels
+    state.powerups.forEach(p => { 
+        ctx.fillStyle = p.t==='P' ? '#ff0' : '#0cf'; ctx.fillRect(p.x, p.y, 35, 35); 
+        ctx.fillStyle = '#000'; ctx.font = 'bold 20px Arial'; ctx.fillText(p.t, p.x+10, p.y+26);
+    });
+
     state.bullets.forEach(b => { ctx.fillStyle = b.laser ? '#0ff' : '#fff'; ctx.fillRect(b.x, b.y, b.laser?8:4, b.laser?40:15); });
-    state.particles.forEach(p => { ctx.fillStyle = p.color; ctx.globalAlpha = p.life / 30; ctx.fillRect(p.x, p.y, 3, 3); });
+    state.particles.forEach(p => { ctx.fillStyle = p.color; ctx.globalAlpha = p.life / 40; ctx.fillRect(p.x, p.y, 3, 3); });
     ctx.globalAlpha = 1;
 }
 
