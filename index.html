@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Earth Defender </title>
+    <title>Earth Defender - High Scores Edition</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         body { margin: 0; padding: 0; background: #000; color: #0f6; font-family: 'Press Start 2P', cursive; display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; overflow: hidden; touch-action: none; }
@@ -18,6 +18,7 @@
         .btn-retro { background: #000; color: #0f6; border: 1px solid #0f6; padding: 5px 10px; font-family: inherit; font-size: 8px; cursor: pointer; }
         .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; text-align: center; }
         input { background: #000; border: 1px solid #0f6; color: #0f6; padding: 10px; text-align: center; font-family: inherit; margin-bottom: 10px; outline: none; }
+        #hsList { font-size: 10px; color: #ff0; margin: 15px 0; line-height: 1.6; }
     </style>
 </head>
 <body>
@@ -35,12 +36,12 @@
     <div id="gamearea">
         <canvas id="gameCanvas" width="950" height="600"></canvas>
         <div id="menu" class="overlay">
-            <input type="text" id="nameInput" placeholder="NAME" maxlength="10">
-            <button class="btn-retro" onclick="startGame()">LAUNCH</button>
+            <input type="text" id="nameInput" placeholder="ENTER NAME" maxlength="10">
+            <button class="btn-retro" onclick="startGame()">LAUNCH MISSION</button>
         </div>
         <div id="gameOver" class="overlay" style="display:none">
             <h1 id="endStatus" style="color:#f00">GAME OVER</h1>
-            <div id="hsList" style="font-size: 9px; line-height: 1.5; margin-bottom: 10px;"></div>
+            <div id="hsList"></div>
             <button class="btn-retro" onclick="location.reload()">RESTART</button>
         </div>
     </div>
@@ -222,7 +223,12 @@ function update() {
     state.powerups.forEach((p, i) => {
         p.y += 3;
         if(Math.abs(p.x - state.player.x) < 50 && Math.abs(p.y - state.player.y) < 50) {
-            if(p.t === 'P') state.weapon = Math.min(state.weapon+1, 3); else state.shield = 400;
+            if(p.t === 'P') {
+                if(state.weapon >= 3) state.weapon = 0;
+                else state.weapon++;
+            } else {
+                state.shield = 400;
+            }
             state.powerups.splice(i, 1);
         }
     });
@@ -237,43 +243,61 @@ function updateUI() {
     document.getElementById('uiScore').innerText = state.score;
     document.getElementById('uiLevel').innerText = state.level;
     document.getElementById('uiLives').innerText = "❤️".repeat(Math.max(0, state.lives));
-    document.getElementById('uiWeapon').innerText = ["SNG", "DBL", "TPL", "LSR"][state.weapon];
+    document.getElementById('uiWeapon').innerText = ["SINGLE", "DOUBLE", "TRIPLE", "LASER"][state.weapon];
 }
 
 function draw() {
     ctx.fillStyle = '#000'; ctx.fillRect(0,0,950,600);
     ctx.fillStyle = '#fff'; state.stars.forEach(s => ctx.fillRect(s.x, s.y, 2, 2));
-    
     if(state.shield > 0) { ctx.strokeStyle = '#0cf'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(state.player.x+20, state.player.y+30, 45, 0, Math.PI*2); ctx.stroke(); }
-    
-    // Player
     ctx.fillStyle = '#0f6'; ctx.beginPath(); ctx.moveTo(state.player.x+20, state.player.y); ctx.lineTo(state.player.x+40, state.player.y+45); ctx.lineTo(state.player.x+30, state.player.y+38); ctx.lineTo(state.player.x+10, state.player.y+38); ctx.lineTo(state.player.x, state.player.y+45); ctx.fill();
     ctx.fillStyle = Math.random() > 0.5 ? '#f60' : '#ff0'; ctx.fillRect(state.player.x+16, state.player.y+40, 8, warping?30:12);
-    
-    // Enemies
     state.enemies.forEach(en => {
         ctx.fillStyle = en.boss ? '#f0f' : '#f04'; ctx.beginPath(); ctx.ellipse(en.x+(en.boss?125:20), en.y+(en.boss?50:15), en.boss?120:20, en.boss?40:10, 0, 0, Math.PI*2); ctx.fill();
         ctx.fillStyle = '#0ff'; ctx.beginPath(); ctx.arc(en.x+(en.boss?125:20), en.y+(en.boss?40:10), en.boss?40:10, 0, Math.PI, true); ctx.fill();
         if(en.boss) { ctx.fillStyle = '#fff'; ctx.fillRect(en.x, en.y-20, (en.hp/en.mhp)*250, 8); }
     });
-    
     state.enemyBullets.forEach(eb => { ctx.fillStyle = '#ff0'; ctx.beginPath(); ctx.arc(eb.x, eb.y, 5, 0, Math.PI*2); ctx.fill(); });
-    
-    // Powerups with Labels
     state.powerups.forEach(p => { 
         ctx.fillStyle = p.t==='P' ? '#ff0' : '#0cf'; ctx.fillRect(p.x, p.y, 35, 35); 
         ctx.fillStyle = '#000'; ctx.font = 'bold 20px Arial'; ctx.fillText(p.t, p.x+10, p.y+26);
     });
-
     state.bullets.forEach(b => { ctx.fillStyle = b.laser ? '#0ff' : '#fff'; ctx.fillRect(b.x, b.y, b.laser?8:4, b.laser?40:15); });
     state.particles.forEach(p => { ctx.fillStyle = p.color; ctx.globalAlpha = p.life / 40; ctx.fillRect(p.x, p.y, 3, 3); });
     ctx.globalAlpha = 1;
 }
 
-function endGame() { state.active = false; document.getElementById('gameOver').style.display = 'flex'; isTouching = false; }
-function winGame() { state.active = false; document.getElementById('endStatus').innerText = "VICTORY!"; document.getElementById('gameOver').style.display = 'flex'; isTouching = false; }
+// HIGH SCORE LOGIC
+function saveHS() {
+    let hs = JSON.parse(localStorage.getItem("ED_Scores") || "[]");
+    hs.push({n: document.getElementById('uiName').innerText, s: state.score});
+    hs.sort((a,b) => b.s - a.s);
+    hs = hs.slice(0, 5);
+    localStorage.setItem("ED_Scores", JSON.stringify(hs));
+    renderHS(hs);
+}
+
+function renderHS(list) {
+    document.getElementById('hsList').innerHTML = "TOP SCORES:<br>" + 
+        list.map((item, i) => `${i+1}. ${item.n} - ${item.s}`).join("<br>");
+}
+
+function endGame() { 
+    state.active = false; 
+    saveHS(); 
+    document.getElementById('gameOver').style.display = 'flex'; 
+    isTouching = false; 
+}
+
+function winGame() { 
+    state.active = false; 
+    document.getElementById('endStatus').innerText = "VICTORY!"; 
+    saveHS(); 
+    document.getElementById('gameOver').style.display = 'flex'; 
+    isTouching = false; 
+}
+
 function loop() { update(); draw(); if(state.active) requestAnimationFrame(loop); }
 </script>
 </body>
 </html>
-
