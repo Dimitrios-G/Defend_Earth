@@ -18,14 +18,6 @@
         .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; text-align: center; }
         input { background: #000; border: 2px solid #0f6; color: #0f6; padding: 10px; text-align: center; font-family: inherit; margin-bottom: 20px; outline: none; }
         .instructions { font-size: 10px; color: #0cf; margin-top: 20px; line-height: 1.6; }
-
-        /* TOUCH CONTROLS STYLE */
-        #touchControls { position: absolute; bottom: 20px; left: 0; right: 0; display: none; justify-content: space-between; padding: 0 40px; pointer-events: none; z-index: 50; }
-        .touch-btn { width: 70px; height: 70px; background: rgba(0, 255, 102, 0.2); border: 3px solid #0f6; color: #0f6; display: flex; align-items: center; justify-content: center; border-radius: 50%; user-select: none; pointer-events: auto; font-size: 20px; }
-        .d-pad { display: grid; grid-template-columns: repeat(3, 60px); grid-template-rows: repeat(2, 60px); gap: 5px; }
-        #fireBtn { width: 100px; height: 100px; background: rgba(255, 0, 0, 0.3); border-color: #f00; color: #f00; font-size: 14px; align-self: center; }
-        
-        @media (max-width: 1024px) { #touchControls { display: flex; } }
     </style>
 </head>
 <body>
@@ -42,24 +34,13 @@
     
     <div id="gamearea">
         <canvas id="gameCanvas" width="950" height="600"></canvas>
-        
-        <div id="touchControls">
-            <div class="d-pad">
-                <div style="grid-column: 2" class="touch-btn" ontouchstart="state.keys['ArrowUp']=true" ontouchend="state.keys['ArrowUp']=false">↑</div>
-                <div style="grid-row: 2" class="touch-btn" ontouchstart="state.keys['ArrowLeft']=true" ontouchend="state.keys['ArrowLeft']=false">←</div>
-                <div style="grid-row: 2" class="touch-btn" ontouchstart="state.keys['ArrowDown']=true" ontouchend="state.keys['ArrowDown']=false">↓</div>
-                <div style="grid-row: 2" class="touch-btn" ontouchstart="state.keys['ArrowRight']=true" ontouchend="state.keys['ArrowRight']=false">→</div>
-            </div>
-            <div id="fireBtn" class="touch-btn" ontouchstart="state.keys['Space']=true" ontouchend="state.keys['Space']=false">FIRE</div>
-        </div>
-
         <div id="menu" class="overlay">
             <input type="text" id="nameInput" placeholder="ENTER NAME" maxlength="10">
             <button class="btn-retro" onclick="startGame()">LAUNCH MISSION</button>
             <div class="instructions">
                 --- CONTROLS ---<br>
-                ARROWS: MOVE SHIP<br>
-                SPACE: FIRE WEAPON<br>
+                ARROWS / TOUCH: MOVE SHIP<br>
+                SPACE / AUTO: FIRE WEAPON<br>
                 P: POWER-UPS | S: SHIELD
             </div>
         </div>
@@ -95,6 +76,18 @@ for(let i=0; i<80; i++) state.stars.push({x: Math.random()*950, y: Math.random()
 window.onkeydown = e => state.keys[e.code] = true;
 window.onkeyup = e => state.keys[e.code] = false;
 
+// TOUCH MOVEMENT LOGIC
+canvas.addEventListener('touchmove', e => {
+    if(!state.active || isPaused) return;
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    state.player.x = (touch.clientX - rect.left) * scaleX - 20;
+    state.player.y = (touch.clientY - rect.top) * scaleY - 30;
+}, { passive: false });
+
 // --- ΗΧΟΙ & ΜΟΥΣΙΚΗ ---
 function playShootSound() {
     const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
@@ -116,7 +109,6 @@ function playExplodeSound() {
     osc.start(); osc.stop(audioCtx.currentTime + 0.3);
 }
 
-// ΜΟΥΣΙΚΗ ΥΠΟΚΡΟΥΣΗ
 function startMusic() {
     const notes = [110, 123, 130, 146, 110, 123, 164, 146];
     let step = 0;
@@ -175,11 +167,18 @@ function update() {
         if(state.player.y < -100) { if(state.level >= 40) { winGame(); return; } state.level++; startLevel(); }
         return;
     }
+    
+    // Keyboard Movement
     if(state.keys['ArrowLeft'] && state.player.x > 0) state.player.x -= 7;
     if(state.keys['ArrowRight'] && state.player.x < 910) state.player.x += 7;
     if(state.keys['ArrowUp'] && state.player.y > 0) state.player.y -= 7;
     if(state.keys['ArrowDown'] && state.player.y < 540) state.player.y += 7;
-    if(state.keys['Space'] && Date.now() - (state.lastFire || 0) > 180) { fire(); state.lastFire = Date.now(); }
+    
+    // Auto-fire or Space
+    if((state.keys['Space'] || 'ontouchstart' in window) && Date.now() - (state.lastFire || 0) > 180) { 
+        fire(); state.lastFire = Date.now(); 
+    }
+    
     if(state.shield > 0) state.shield--;
 
     if(state.level % 5 === 0) {
