@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
     <meta charset="UTF-8">
-    <title>Earth Defender - Final Version</title>
+    <title>Earth Defender - Mobile Touch</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         body { margin: 0; background: #000; color: #0f6; font-family: 'Press Start 2P', cursive; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; touch-action: none; }
@@ -39,9 +39,8 @@
             <button class="btn-retro" onclick="startGame()">LAUNCH MISSION</button>
             <div class="instructions">
                 --- CONTROLS ---<br>
-                ARROWS / TOUCH: MOVE SHIP<br>
-                SPACE / AUTO: FIRE WEAPON<br>
-                P: POWER-UPS | S: SHIELD
+                PC: ARROWS & SPACE<br>
+                TABLET: TOUCH & DRAG TO MOVE
             </div>
         </div>
         <div id="gameOver" class="overlay" style="display:none">
@@ -63,7 +62,7 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-let isPaused = false, warping = false;
+let isPaused = false, warping = false, isTouching = false;
 let state = {
     active: false, score: 0, level: 1, lives: 3, weapon: 0,
     enemiesRemaining: 0, shield: 0, bossSpawned: false,
@@ -73,22 +72,27 @@ let state = {
 
 for(let i=0; i<80; i++) state.stars.push({x: Math.random()*950, y: Math.random()*600, s: Math.random()*3+1});
 
+// Keyboard
 window.onkeydown = e => state.keys[e.code] = true;
 window.onkeyup = e => state.keys[e.code] = false;
 
-// TOUCH MOVEMENT LOGIC
-canvas.addEventListener('touchmove', e => {
+// Touch Handling
+function handleTouch(e) {
     if(!state.active || isPaused) return;
     e.preventDefault();
+    isTouching = true;
     const rect = canvas.getBoundingClientRect();
     const touch = e.touches[0];
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
     state.player.x = (touch.clientX - rect.left) * scaleX - 20;
     state.player.y = (touch.clientY - rect.top) * scaleY - 30;
-}, { passive: false });
+}
 
-// --- ΗΧΟΙ & ΜΟΥΣΙΚΗ ---
+canvas.addEventListener('touchstart', handleTouch, {passive: false});
+canvas.addEventListener('touchmove', handleTouch, {passive: false});
+canvas.addEventListener('touchend', () => isTouching = false, {passive: false});
+
 function playShootSound() {
     const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
     osc.type = 'triangle'; osc.frequency.setValueAtTime(400, audioCtx.currentTime);
@@ -174,8 +178,8 @@ function update() {
     if(state.keys['ArrowUp'] && state.player.y > 0) state.player.y -= 7;
     if(state.keys['ArrowDown'] && state.player.y < 540) state.player.y += 7;
     
-    // Auto-fire or Space
-    if((state.keys['Space'] || 'ontouchstart' in window) && Date.now() - (state.lastFire || 0) > 180) { 
+    // Auto-fire if Touching or Space
+    if((state.keys['Space'] || isTouching) && Date.now() - (state.lastFire || 0) > 180) { 
         fire(); state.lastFire = Date.now(); 
     }
     
@@ -272,8 +276,8 @@ function draw() {
     ctx.globalAlpha = 1;
 }
 
-function endGame() { state.active = false; saveHS(); document.getElementById('gameOver').style.display = 'flex'; }
-function winGame() { state.active = false; document.getElementById('endStatus').innerText = "VICTORY!"; saveHS(); document.getElementById('gameOver').style.display = 'flex'; }
+function endGame() { state.active = false; saveHS(); document.getElementById('gameOver').style.display = 'flex'; isTouching = false; }
+function winGame() { state.active = false; document.getElementById('endStatus').innerText = "VICTORY!"; saveHS(); document.getElementById('gameOver').style.display = 'flex'; isTouching = false; }
 function saveHS() {
     let hs = JSON.parse(localStorage.getItem("hs")||"[]"); hs.push({n: document.getElementById('uiName').innerText, s: state.score});
     hs.sort((a,b)=>b.s-a.s); hs = hs.slice(0,5); localStorage.setItem("hs", JSON.stringify(hs)); renderHS(hs);
