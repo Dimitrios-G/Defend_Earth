@@ -2,13 +2,14 @@
 <html lang="el">
 <head>
     <meta charset="UTF-8">
-    <title>Earth Defender - Fully Responsive</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Earth Defender - Mobile Max</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         
-        /* Προσαρμογή για να φαίνονται όλα σε κάθε οθόνη */
         body { 
             margin: 0; 
+            padding: 0;
             background: #000; 
             color: #0f6; 
             font-family: 'Press Start 2P', cursive; 
@@ -16,38 +17,41 @@
             justify-content: center; 
             align-items: center; 
             height: 100vh; 
+            width: 100vw;
             overflow: hidden; 
             touch-action: none; 
         }
 
         #frame { 
-            width: 950px; 
-            height: 850px; 
-            border: 4px solid #0f6; 
-            position: relative; 
+            width: 100%; 
+            height: 100%; 
             display: flex; 
             flex-direction: column; 
-            background: #000; 
-            /* Αυτό το κομμάτι κάνει το scale για τα tablets */
-            max-width: 95vw; 
-            max-height: 95vh;
-            box-sizing: border-box;
+            background: #000;
+            border: none; /* Αφαιρούμε το εξωτερικό border για περισσότερο χώρο */
         }
 
-        .main-title { text-align: center; font-size: 18px; padding: 10px; border-bottom: 2px solid #0f6; flex-shrink: 0; }
+        .main-title { 
+            text-align: center; 
+            font-size: 14px; 
+            padding: 5px; 
+            border-bottom: 1px solid #0f6; 
+            flex-shrink: 0;
+        }
         
         header { 
             display: flex; 
             flex-wrap: wrap;
-            gap: 5px; 
-            padding: 10px; 
-            font-size: 8px; 
+            gap: 2px; 
+            padding: 5px; 
+            font-size: 7px; 
             justify-content: space-around; 
-            border-bottom: 2px solid #0f6; 
+            border-bottom: 1px solid #0f6; 
             flex-shrink: 0;
+            background: rgba(0, 20, 0, 0.5);
         }
 
-        .stat-item { border: 1px solid #0f6; padding: 5px; border-radius: 5px; }
+        .stat-item { padding: 3px; }
         #uiLives { color: #ff0000; }
         
         #gamearea { 
@@ -61,25 +65,25 @@
             display: block; 
             width: 100%; 
             height: 100%; 
-            object-fit: contain; /* Διατηρεί τις αναλογίες του παιχνιδιού */
+            touch-action: none;
         }
 
         footer { 
             display: flex; 
             justify-content: center; 
-            gap: 15px; 
-            padding: 10px; 
-            border-top: 4px solid #0f6; 
+            gap: 10px; 
+            padding: 5px; 
+            border-top: 1px solid #0f6; 
             flex-shrink: 0;
         }
 
         .btn-retro { 
             background: #000; 
             color: #0f6; 
-            border: 2px solid #0f6; 
-            padding: 8px 12px; 
+            border: 1px solid #0f6; 
+            padding: 5px 10px; 
             font-family: inherit; 
-            font-size: 9px; 
+            font-size: 8px; 
             cursor: pointer; 
         }
 
@@ -95,7 +99,7 @@
             text-align: center; 
         }
 
-        input { background: #000; border: 2px solid #0f6; color: #0f6; padding: 10px; text-align: center; font-family: inherit; margin-bottom: 20px; outline: none; }
+        input { background: #000; border: 1px solid #0f6; color: #0f6; padding: 10px; text-align: center; font-family: inherit; margin-bottom: 10px; outline: none; }
     </style>
 </head>
 <body>
@@ -103,29 +107,29 @@
 <div id="frame">
     <div class="main-title">🚀 EARTH DEFENDER 🚀</div>
     <header>
-        <div class="stat-item">PILOT: <span id="uiName">---</span></div>
-        <div class="stat-item">SCORE: <span id="uiScore">0</span></div>
-        <div class="stat-item">LVL: <span id="uiLevel">1/40</span></div>
-        <div class="stat-item">LIVES: <span id="uiLives">❤️❤️❤️</span></div>
-        <div class="stat-item">WEAPON: <span id="uiWeapon">SINGLE</span></div>
+        <div class="stat-item">P:<span id="uiName">---</span></div>
+        <div class="stat-item">SCR:<span id="uiScore">0</span></div>
+        <div class="stat-item">LVL:<span id="uiLevel">1/40</span></div>
+        <div class="stat-item">HP:<span id="uiLives">❤️❤️❤️</span></div>
+        <div class="stat-item">WPN:<span id="uiWeapon">SINGLE</span></div>
     </header>
     
     <div id="gamearea">
         <canvas id="gameCanvas" width="950" height="600"></canvas>
         <div id="menu" class="overlay">
-            <input type="text" id="nameInput" placeholder="ENTER NAME" maxlength="10">
-            <button class="btn-retro" onclick="startGame()">LAUNCH MISSION</button>
+            <input type="text" id="nameInput" placeholder="NAME" maxlength="10">
+            <button class="btn-retro" onclick="startGame()">LAUNCH</button>
         </div>
         <div id="gameOver" class="overlay" style="display:none">
             <h1 id="endStatus" style="color:#f00">GAME OVER</h1>
-            <div id="hsList" style="font-size: 10px; line-height: 1.8; margin-bottom: 20px;"></div>
+            <div id="hsList" style="font-size: 9px; line-height: 1.5; margin-bottom: 10px;"></div>
             <button class="btn-retro" onclick="location.reload()">RESTART</button>
         </div>
     </div>
 
     <footer>
         <button class="btn-retro" onclick="isPaused = !isPaused">PAUSE</button>
-        <button class="btn-retro" onclick="window.close()">QUIT</button>
+        <button class="btn-retro" onclick="location.reload()">RELOAD</button>
     </footer>
 </div>
 
@@ -144,7 +148,6 @@ let state = {
 
 for(let i=0; i<80; i++) state.stars.push({x: Math.random()*950, y: Math.random()*600, s: Math.random()*3+1});
 
-// Controls
 window.onkeydown = e => state.keys[e.code] = true;
 window.onkeyup = e => state.keys[e.code] = false;
 
@@ -152,7 +155,6 @@ function updateTouch(e) {
     if(!state.active || isPaused) return;
     const rect = canvas.getBoundingClientRect();
     const touch = e.touches[0];
-    // Υπολογισμός θέσης με βάση το scaling του canvas
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
     state.player.x = (touch.clientX - rect.left) * scaleX - 20;
@@ -163,12 +165,11 @@ canvas.addEventListener('touchstart', (e) => { e.preventDefault(); isTouching = 
 canvas.addEventListener('touchmove', (e) => { e.preventDefault(); updateTouch(e); }, {passive: false});
 canvas.addEventListener('touchend', () => { isTouching = false; }, {passive: false});
 
-// Sounds
 function playShootSound() {
     const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
     osc.type = 'triangle'; osc.frequency.setValueAtTime(400, audioCtx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1);
-    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
     osc.connect(gain); gain.connect(audioCtx.destination);
     osc.start(); osc.stop(audioCtx.currentTime + 0.1);
@@ -178,7 +179,7 @@ function playExplodeSound() {
     const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
     osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, audioCtx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + 0.3);
-    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
     gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
     osc.connect(gain); gain.connect(audioCtx.destination);
     osc.start(); osc.stop(audioCtx.currentTime + 0.3);
@@ -192,7 +193,7 @@ function startMusic() {
         if (!isPaused) {
             const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
             osc.type = 'sine'; osc.frequency.setValueAtTime(notes[step % notes.length], audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
             osc.connect(gain); gain.connect(audioCtx.destination);
             osc.start(); osc.stop(audioCtx.currentTime + 0.5);
@@ -203,15 +204,15 @@ function startMusic() {
     playStep();
 }
 
-function createExplosion(x, y, color, count = 25) {
+function createExplosion(x, y, color, count = 15) {
     playExplodeSound();
     for(let i=0; i<count; i++) {
-        state.particles.push({ x: x, y: y, vx: (Math.random()-0.5)*12, vy: (Math.random()-0.5)*12, life: 40, color: color });
+        state.particles.push({ x: x, y: y, vx: (Math.random()-0.5)*12, vy: (Math.random()-0.5)*12, life: 30, color: color });
     }
 }
 
 function startGame() {
-    document.getElementById('uiName').innerText = document.getElementById('nameInput').value || "Pilot";
+    document.getElementById('uiName').innerText = document.getElementById('nameInput').value || "P1";
     document.getElementById('menu').style.display = 'none';
     state.active = true;
     if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -243,11 +244,6 @@ function update() {
         return;
     }
     
-    if(state.keys['ArrowLeft'] && state.player.x > 0) state.player.x -= 7;
-    if(state.keys['ArrowRight'] && state.player.x < 910) state.player.x += 7;
-    if(state.keys['ArrowUp'] && state.player.y > 0) state.player.y -= 7;
-    if(state.keys['ArrowDown'] && state.player.y < 540) state.player.y += 7;
-    
     if((state.keys['Space'] || isTouching) && Date.now() - (state.lastFire || 0) > 180) { 
         fire(); state.lastFire = Date.now(); 
     }
@@ -270,13 +266,12 @@ function update() {
             if(en.y < 60) en.y += 1; en.x += (3 + (state.level/10)) * en.d;
             if(en.x > 700 || en.x < 0) en.d *= -1;
             if(Math.random() < 0.05) state.enemyBullets.push({x: en.x+125, y: en.y+80, vy: 5+(state.level/10)});
-            if(state.level >= 10 && Math.random() < 0.03) state.enemies.push({ x: en.x + 100, y: en.y + 100, s: 4, hp: 1, boss: false, isMinion: true });
         } else {
-            en.y += en.s; if(en.y > 600) { if(en.isMinion) state.enemies.splice(i, 1); else { en.y = -50; en.x = Math.random()*850; } }
+            en.y += en.s; if(en.y > 600) { en.y = -50; en.x = Math.random()*850; }
         }
         let dist = en.boss ? 80 : 35;
         if(Math.abs(en.x+(en.boss?125:20)-(state.player.x+20)) < dist && Math.abs(en.y+(en.boss?50:20)-(state.player.y+30)) < dist) {
-            if(state.shield <= 0) { state.lives--; createExplosion(state.player.x+20, state.player.y+30, '#f00', 50); if(state.lives <= 0) endGame(); state.shield = 100; }
+            if(state.shield <= 0) { state.lives--; createExplosion(state.player.x+20, state.player.y+30, '#f00', 30); if(state.lives <= 0) endGame(); state.shield = 100; }
         }
     });
 
@@ -290,7 +285,7 @@ function update() {
                     createExplosion(en.x+(en.boss?125:20), en.y+(en.boss?50:15), en.boss?'#f0f':'#0f6');
                     state.score += en.boss ? 2000 : 100;
                     if(Math.random() < 0.08) state.powerups.push({x: en.x, y: en.y, t: Math.random() < 0.7 ? 'P' : 'S'});
-                    state.enemies.splice(ei, 1); if(!en.isMinion) state.enemiesRemaining--;
+                    state.enemies.splice(ei, 1); state.enemiesRemaining--;
                 }
             }
         });
@@ -300,7 +295,7 @@ function update() {
     state.enemyBullets.forEach((eb, ebi) => {
         eb.y += eb.vy;
         if(Math.abs(eb.x - (state.player.x+20)) < 25 && Math.abs(eb.y - (state.player.y+30)) < 25) {
-            if(state.shield <= 0) { state.lives--; createExplosion(state.player.x+20, state.player.y+30, '#f00', 40); if(state.lives <= 0) endGame(); state.shield = 100; }
+            if(state.shield <= 0) { state.lives--; createExplosion(state.player.x+20, state.player.y+30, '#f00', 30); if(state.lives <= 0) endGame(); state.shield = 100; }
             state.enemyBullets.splice(ebi, 1);
         }
         if(eb.y > 650) state.enemyBullets.splice(ebi, 1);
@@ -322,9 +317,9 @@ function update() {
 
 function updateUI() {
     document.getElementById('uiScore').innerText = state.score;
-    document.getElementById('uiLevel').innerText = state.level + "/40";
+    document.getElementById('uiLevel').innerText = state.level;
     document.getElementById('uiLives').innerText = "❤️".repeat(Math.max(0, state.lives));
-    document.getElementById('uiWeapon').innerText = ["SINGLE", "DOUBLE", "TRIPLE", "LASER"][state.weapon];
+    document.getElementById('uiWeapon').innerText = ["SNG", "DBL", "TPL", "LSR"][state.weapon];
 }
 
 function draw() {
@@ -332,27 +327,19 @@ function draw() {
     ctx.fillStyle = '#fff'; state.stars.forEach(s => ctx.fillRect(s.x, s.y, 2, 2));
     if(state.shield > 0) { ctx.strokeStyle = '#0cf'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(state.player.x+20, state.player.y+30, 45, 0, Math.PI*2); ctx.stroke(); }
     ctx.fillStyle = '#0f6'; ctx.beginPath(); ctx.moveTo(state.player.x+20, state.player.y); ctx.lineTo(state.player.x+40, state.player.y+45); ctx.lineTo(state.player.x+30, state.player.y+38); ctx.lineTo(state.player.x+10, state.player.y+38); ctx.lineTo(state.player.x, state.player.y+45); ctx.fill();
-    ctx.fillStyle = Math.random() > 0.5 ? '#f60' : '#ff0'; ctx.fillRect(state.player.x+16, state.player.y+40, 8, warping?30:12);
     state.enemies.forEach(en => {
         ctx.fillStyle = en.boss ? '#f0f' : '#f04'; ctx.beginPath(); ctx.ellipse(en.x+(en.boss?125:20), en.y+(en.boss?50:15), en.boss?120:20, en.boss?40:10, 0, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#0ff'; ctx.beginPath(); ctx.arc(en.x+(en.boss?125:20), en.y+(en.boss?40:10), en.boss?40:10, 0, Math.PI, true); ctx.fill();
-        if(en.boss) { ctx.fillStyle = '#fff'; ctx.fillRect(en.x, en.y-20, (en.hp/en.mhp)*250, 8); }
+        if(en.boss) { ctx.fillStyle = '#fff'; ctx.fillRect(en.x, en.y-10, (en.hp/en.mhp)*250, 4); }
     });
     state.enemyBullets.forEach(eb => { ctx.fillStyle = '#ff0'; ctx.beginPath(); ctx.arc(eb.x, eb.y, 5, 0, Math.PI*2); ctx.fill(); });
-    state.powerups.forEach(p => { ctx.fillStyle = p.t==='P' ? '#ff0' : '#0cf'; ctx.fillRect(p.x, p.y, 35, 35); ctx.fillStyle = '#000'; ctx.font = 'bold 20px Arial'; ctx.fillText(p.t, p.x+10, p.y+26); });
+    state.powerups.forEach(p => { ctx.fillStyle = p.t==='P' ? '#ff0' : '#0cf'; ctx.fillRect(p.x, p.y, 30, 30); });
     state.bullets.forEach(b => { ctx.fillStyle = b.laser ? '#0ff' : '#fff'; ctx.fillRect(b.x, b.y, b.laser?8:4, b.laser?40:15); });
-    state.particles.forEach(p => { ctx.fillStyle = p.color; ctx.globalAlpha = p.life / 40; ctx.fillRect(p.x, p.y, 3, 3); });
+    state.particles.forEach(p => { ctx.fillStyle = p.color; ctx.globalAlpha = p.life / 30; ctx.fillRect(p.x, p.y, 3, 3); });
     ctx.globalAlpha = 1;
 }
 
-function endGame() { state.active = false; saveHS(); document.getElementById('gameOver').style.display = 'flex'; isTouching = false; }
-function winGame() { state.active = false; document.getElementById('endStatus').innerText = "VICTORY!"; saveHS(); document.getElementById('gameOver').style.display = 'flex'; isTouching = false; }
-function saveHS() {
-    let hs = JSON.parse(localStorage.getItem("hs")||"[]"); hs.push({n: document.getElementById('uiName').innerText, s: state.score});
-    hs.sort((a,b)=>b.s-a.s); hs = hs.slice(0,5); localStorage.setItem("hs", JSON.stringify(hs)); renderHS(hs);
-}
-function renderHS(list) { document.getElementById('hsList').innerHTML = "TOP SCORES:<br>" + list.map(i=>`${i.n}: ${i.s}`).join("<br>"); }
-function clearHS() { localStorage.removeItem("hs"); renderHS([]); }
+function endGame() { state.active = false; document.getElementById('gameOver').style.display = 'flex'; isTouching = false; }
+function winGame() { state.active = false; document.getElementById('endStatus').innerText = "VICTORY!"; document.getElementById('gameOver').style.display = 'flex'; isTouching = false; }
 function loop() { update(); draw(); if(state.active) requestAnimationFrame(loop); }
 </script>
 </body>
