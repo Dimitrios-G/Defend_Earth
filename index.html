@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Extra-Terrestrial Attack</title>
+    <title>Extra-Terrestrial Attack - D&G Games</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         body { margin: 0; background: #000; color: #0f6; font-family: 'Press Start 2P', cursive; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; touch-action: none; }
@@ -27,7 +27,7 @@
 <body>
 
 <div id="frame">
-    <div class="main-title">🚀 Extra-Terrestrial Attack 🚀</div>
+    <div class="main-title">🚀 EXTRA-TERRESTRIAL ATTACK 🚀</div>
     <header>
         <div class="stat-item">PILOT: <span id="uiName">---</span></div>
         <div class="stat-item">SCORE: <span id="uiScore">0</span></div>
@@ -109,7 +109,7 @@ function spawnEnemy() {
 
 function update() {
     if(!state.active || isPaused) return;
-    if(state.shieldTime > 0) state.shieldTime -= 16.6; // ~60fps
+    if(state.shieldTime > 0) state.shieldTime -= 16.6; 
     if(warping) { state.player.y -= 15; if(state.player.y < -100) { if(state.level >= 40) { endGame(true); return; } state.level++; startLevel(); } return; }
 
     if(state.keys['ArrowLeft'] && state.player.x > 0) state.player.x -= 7;
@@ -251,4 +251,3 @@ function loop() { update(); draw(); if(state.active) requestAnimationFrame(loop)
 </script>
 </body>
 </html>
-
