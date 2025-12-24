@@ -13,18 +13,16 @@
         .stat-item { border: 1px solid #0f6; padding: 5px; border-radius: 5px; min-width: 80px; text-align: center; }
         #uiLives { color: #ff0000; }
         #gamearea { flex: 1; position: relative; overflow: hidden; background: #000; }
-        canvas { display: block; width: 100%; height: 100%; }
+        canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
         footer { display: flex; justify-content: center; gap: 15px; padding: 10px; border-top: 2px solid #0f6; background: #000; width: 100%; box-sizing: border-box; }
         .btn-retro { background: #000; color: #0f6; border: 2px solid #0f6; padding: 8px 12px; font-family: inherit; font-size: 9px; cursor: pointer; }
         .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; text-align: center; padding: 20px; }
         input { background: #000; border: 2px solid #0f6; color: #0f6; padding: 10px; text-align: center; font-family: inherit; margin-bottom: 10px; outline: none; width: 200px; }
         .instructions-box { border: 1px dashed #0f6; padding: 15px; margin-top: 20px; font-size: 8px; line-height: 1.6; color: #fff; width: 300px; }
         .logo-img { width: 180px; margin-bottom: 20px; border: 2px solid #0f6; padding: 5px; background: #111; }
-        #touchControls { position: absolute; bottom: 20px; left: 0; right: 0; display: none; justify-content: space-between; padding: 0 20px; pointer-events: none; z-index: 50; }
-        .d-pad { display: grid; grid-template-columns: 50px 50px 50px; gap: 5px; pointer-events: auto; }
-        .t-btn { width: 50px; height: 50px; background: rgba(0, 255, 102, 0.2); border: 2px solid #0f6; color: #0f6; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 12px; user-select: none; }
-        .fire-btn { width: 80px; height: 80px; border-radius: 40px; background: rgba(255, 0, 0, 0.3); border: 3px solid #f00; color: #f00; font-weight: bold; pointer-events: auto; }
-        @media (max-width: 1000px) { #frame { width: 100vw; height: 100vh; border: none; } #touchControls { display: flex; } }
+        #touchControls { position: absolute; bottom: 30px; right: 30px; display: none; z-index: 50; pointer-events: none; }
+        .fire-btn { width: 80px; height: 80px; border-radius: 40px; background: rgba(255, 0, 0, 0.4); border: 3px solid #f00; color: #f00; font-weight: bold; pointer-events: auto; font-family: inherit; font-size: 10px; }
+        @media (max-width: 1000px) { #frame { width: 100vw; height: 100vh; border: none; } #touchControls { display: block; } }
     </style>
 </head>
 <body>
@@ -44,17 +42,14 @@
             <input type="text" id="nameInput" placeholder="ENTER NAME" maxlength="10">
             <button class="btn-retro" onclick="startGame()">START MISSION</button>
             <div class="instructions-box">
-                • POW: WEAPON (MAX: PLASMA SHELL)<br>
-                • HELPERS: TWO DRONES WITH ROCKETS
+                • TOUCH: MOVE SHIP<br>
+                • FIRE: MANUAL SHOOT<br>
+                • HELPERS: TWO DRONES ACTIVE
             </div>
         </div>
         <div id="gameOver" class="overlay" style="display:none"></div>
         <div id="touchControls">
-            <div class="d-pad">
-                <div></div><div class="t-btn" id="btnUp">▲</div><div></div>
-                <div class="t-btn" id="btnLeft">◀</div><div class="t-btn" id="btnDown">▼</div><div class="t-btn" id="btnRight">▶</div>
-            </div>
-            <div class="fire-zone"><div class="t-btn fire-btn" id="btnFire">FIRE</div></div>
+            <button class="fire-btn" id="btnFire">FIRE</button>
         </div>
     </div>
     <footer>
@@ -70,13 +65,27 @@ const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 let isPaused = false, warping = false;
 let state = { active: false, score: 0, level: 1, lives: 3, weapon: 0, shield: 0, enemiesRemaining: 0, bossSpawned: false, player: { x: 450, y: 500 }, companionL: { x: 400, y: 500 }, companionR: { x: 500, y: 500 }, companionsActive: false, bullets: [], enemyBullets: [], particles: [], powerups: [], stars: [], keys: {} };
 
+// Touch Movement Logic
+function handleTouch(e) {
+    if (!state.active || isPaused || warping) return;
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    state.player.x = (touch.clientX - rect.left) * scaleX - 20;
+    state.player.y = (touch.clientY - rect.top) * scaleY - 22;
+}
+canvas.addEventListener('touchmove', (e) => { e.preventDefault(); handleTouch(e); }, { passive: false });
+canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleTouch(e); }, { passive: false });
+
 function playSound(f, t, d, v) { if (audioCtx.state === 'suspended') return; const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.type = t; o.frequency.setValueAtTime(f, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + d); g.gain.setValueAtTime(v, audioCtx.currentTime); o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + d); }
 function startMusic() { let notes = [261, 329, 392, 523, 392, 329]; let i = 0; setInterval(() => { if(state.active && !isPaused) { playSound(notes[i], 'triangle', 0.2, 0.03); i = (i + 1) % notes.length; } }, 200); }
 
 window.onkeydown = e => { state.keys[e.code] = true; if(e.code === 'KeyP') isPaused = !isPaused; };
 window.onkeyup = e => state.keys[e.code] = false;
-const setupT = (id, k) => { const el = document.getElementById(id); el.addEventListener('touchstart', (e) => { e.preventDefault(); state.keys[k] = true; }); el.addEventListener('touchend', (e) => { e.preventDefault(); state.keys[k] = false; }); };
-setupT('btnUp','ArrowUp'); setupT('btnDown','ArrowDown'); setupT('btnLeft','ArrowLeft'); setupT('btnRight','ArrowRight'); setupT('btnFire','Space');
+const btnFire = document.getElementById('btnFire');
+btnFire.addEventListener('touchstart', (e) => { e.preventDefault(); state.keys['Space'] = true; });
+btnFire.addEventListener('touchend', (e) => { e.preventDefault(); state.keys['Space'] = false; });
 
 for(let i=0; i<80; i++) state.stars.push({x: Math.random()*950, y: Math.random()*600, s: Math.random()*3+1});
 
