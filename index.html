@@ -15,10 +15,11 @@
         #gamearea { flex: 1; position: relative; overflow: hidden; background: #000; }
         canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
         footer { display: flex; justify-content: center; gap: 15px; padding: 10px; border-top: 2px solid #0f6; background: #000; width: 100%; box-sizing: border-box; }
-        .btn-retro { background: #000; color: #0f6; border: 2px solid #0f6; padding: 8px 12px; font-family: inherit; font-size: 9px; cursor: pointer; }
+        .btn-retro { background: #000; color: #0f6; border: 2px solid #0f6; padding: 8px 12px; font-family: inherit; font-size: 9px; cursor: pointer; margin-top: 10px; }
         .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; text-align: center; padding: 20px; }
         input { background: #000; border: 2px solid #0f6; color: #0f6; padding: 10px; text-align: center; font-family: inherit; margin-bottom: 10px; outline: none; width: 200px; }
         .instructions-box { border: 1px dashed #0f6; padding: 15px; margin-top: 15px; font-size: 7.5px; line-height: 1.8; color: #fff; width: 340px; background: rgba(0, 255, 102, 0.05); }
+        .high-score-table { font-size: 8px; color: #ff0; margin-top: 15px; line-height: 1.5; }
         .logo-img { width: 180px; margin-bottom: 20px; border: 2px solid #0f6; padding: 5px; background: #111; }
         @media (max-width: 1000px) { #frame { width: 100vw; height: 100vh; border: none; } }
     </style>
@@ -26,7 +27,7 @@
 <body>
 
 <div id="frame">
-    <div class="main-title">🚀 EARTH DEFENDER 🚀</div>
+    <div class="main-title">🚀 Extra-Terrestrial Attack 🚀</div>
     <header>
         <div class="stat-item">PILOT: <span id="uiName">---</span></div>
         <div class="stat-item">SCORE: <span id="uiScore">0</span></div>
@@ -43,8 +44,8 @@
                 <span style="color: #0f6;">[ INSTRUCTIONS ]</span><br>
                 • TOUCH/MOUSE: MOVE & AUTO-FIRE<br>
                 • KEYS: ARROWS TO MOVE / SPACE TO FIRE<br>
-                • POW: LEVEL UP YOUR WEAPON<br>
-                • SHD: ACTIVATE DEFENSE SHIELD<br>
+                • POW: LEVEL UP WEAPON<br>
+                • SHD: INVINCIBLE FOR 10 SECONDS<br>
                 • DRONES: UNLOCKED AT LEVEL 5
             </div>
         </div>
@@ -61,7 +62,7 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 let isPaused = false, warping = false;
-let state = { active: false, score: 0, level: 1, lives: 3, weapon: 0, shield: 0, enemiesRemaining: 0, bossSpawned: false, player: { x: 450, y: 500 }, companionL: { x: 400, y: 500 }, companionR: { x: 500, y: 500 }, companionsActive: false, bullets: [], enemyBullets: [], particles: [], powerups: [], stars: [], keys: {} };
+let state = { active: false, score: 0, level: 1, lives: 3, weapon: 0, shieldTime: 0, enemiesRemaining: 0, bossSpawned: false, player: { x: 450, y: 500 }, companionL: { x: 400, y: 500 }, companionR: { x: 500, y: 500 }, companionsActive: false, bullets: [], enemyBullets: [], particles: [], powerups: [], stars: [], keys: {} };
 
 function handleTouch(e) {
     if (!state.active || isPaused || warping) return;
@@ -88,12 +89,19 @@ window.onkeyup = e => state.keys[e.code] = false;
 
 for(let i=0; i<80; i++) state.stars.push({x: Math.random()*950, y: Math.random()*600, s: Math.random()*3+1});
 
-function startGame() { document.getElementById('uiName').innerText = document.getElementById('nameInput').value || "Pilot"; document.getElementById('menu').style.display = 'none'; state.active = true; if (audioCtx.state === 'suspended') audioCtx.resume(); startMusic(); startLevel(); loop(); }
+function startGame() { 
+    state.pilotName = document.getElementById('nameInput').value || "Pilot";
+    document.getElementById('uiName').innerText = state.pilotName; 
+    document.getElementById('menu').style.display = 'none'; 
+    state.active = true; 
+    if (audioCtx.state === 'suspended') audioCtx.resume(); 
+    startMusic(); startLevel(); loop(); 
+}
+
 function startLevel() { warping = false; state.bossSpawned = false; state.enemies = []; state.enemyBullets = []; state.powerups = []; state.bullets = []; state.player.y = 500; state.enemiesRemaining = (state.level % 5 === 0) ? 1 : 5 + (state.level * 2); }
 
 function spawnEnemy() {
-    let type = 'ufo', hp = 1, ph = Math.random()*6;
-    let diffBoost = 1.5 + (state.level * 0.08);
+    let type = 'ufo', hp = 1, ph = Math.random()*6, diffBoost = 1.5 + (state.level * 0.08);
     if(state.level >= 3 && Math.random() < 0.4) { type = 'heavy'; hp = 4; }
     if(state.level >= 9 && Math.random() < 0.2) { type = 'asteroid'; hp = 2; }
     state.enemies.push({ x: Math.random()*850+50, y: -60, s: (1.5+(state.level*0.1)) * diffBoost, hp, mhp: hp, type, boss: false, phase: ph });
@@ -101,6 +109,7 @@ function spawnEnemy() {
 
 function update() {
     if(!state.active || isPaused) return;
+    if(state.shieldTime > 0) state.shieldTime -= 16.6; // ~60fps
     if(warping) { state.player.y -= 15; if(state.player.y < -100) { if(state.level >= 40) { endGame(true); return; } state.level++; startLevel(); } return; }
 
     if(state.keys['ArrowLeft'] && state.player.x > 0) state.player.x -= 7;
@@ -150,8 +159,8 @@ function update() {
             en.y += en.s; if(en.type === 'heavy') en.x = 425 + Math.sin(en.y*0.005 + en.phase)*400; else en.x += Math.sin(en.y*0.05 + en.phase)*2;
             if(en.y > 650) { state.enemies.splice(i, 1); continue; }
             if(Math.abs(en.x - state.player.x) < 40 && Math.abs(en.y - state.player.y) < 40) {
-                 if(state.shield > 0) state.shield -= 1; 
-                 else { createExplosion(state.player.x + 20, state.player.y + 20, '#f00', 40); state.lives--; state.player.y = 500; playSound(100, 'sawtooth', 0.3, 0.2); }
+                 if(state.shieldTime > 0) continue; 
+                 createExplosion(state.player.x + 20, state.player.y + 20, '#f00', 40); state.lives--; state.player.y = 500; playSound(100, 'sawtooth', 0.3, 0.2);
                  if(state.lives <= 0) endGame(false);
             }
         }
@@ -169,13 +178,13 @@ function update() {
 
     state.enemyBullets = state.enemyBullets.filter(eb => {
         eb.y += 6; let hit = Math.abs(eb.x-(state.player.x+20)) < 30 && Math.abs(eb.y-state.player.y) < 30;
-        if(hit) { if(state.shield > 0) state.shield -= 20; else { createExplosion(state.player.x + 20, state.player.y + 20, '#f00', 40); state.lives--; state.player.y = 500; } if(state.lives <= 0) endGame(false); }
+        if(hit) { if(state.shieldTime <= 0) { createExplosion(state.player.x + 20, state.player.y + 20, '#f00', 40); state.lives--; state.player.y = 500; } if(state.lives <= 0) endGame(false); }
         return eb.y < 650 && !hit;
     });
 
     state.powerups = state.powerups.filter(p => {
         p.y += 3; let hit = Math.abs(p.x - state.player.x) < 50 && Math.abs(p.y - state.player.y) < 50;
-        if(hit) { if(p.t === 'POW') state.weapon++; if(p.t === 'SHD') state.shield = 100; if(p.t === 'LIFE') state.lives = Math.min(state.lives + 1, 5); playSound(900, 'sine', 0.2, 0.1); }
+        if(hit) { if(p.t === 'POW') state.weapon++; if(p.t === 'SHD') state.shieldTime = 10000; if(p.t === 'LIFE') state.lives = Math.min(state.lives + 1, 5); playSound(900, 'sine', 0.2, 0.1); }
         return p.y < 650 && !hit;
     });
 
@@ -195,11 +204,8 @@ function draw() {
     ctx.fillStyle = '#000'; ctx.fillRect(0,0,950,600);
     ctx.fillStyle = '#fff'; state.stars.forEach(s => ctx.fillRect(s.x, s.y, 2, 2));
     drawRocket(state.player.x, state.player.y, 1, '#0f6');
-    if(state.shield > 0) { ctx.strokeStyle = '#0ff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(state.player.x+20, state.player.y+22, 45, 0, 7); ctx.stroke(); }
-    if(state.companionsActive) {
-        drawRocket(state.companionL.x, state.companionL.y, 0.5, '#f0f');
-        drawRocket(state.companionR.x, state.companionR.y, 0.5, '#f0f');
-    }
+    if(state.shieldTime > 0) { ctx.strokeStyle = (state.shieldTime < 2000 && Date.now()%200 < 100) ? 'transparent' : '#0ff'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(state.player.x+20, state.player.y+22, 45, 0, 7); ctx.stroke(); }
+    if(state.companionsActive) { drawRocket(state.companionL.x, state.companionL.y, 0.5, '#f0f'); drawRocket(state.companionR.x, state.companionR.y, 0.5, '#f0f'); }
     state.enemies.forEach(en => {
         if (en.boss) {
             ctx.fillStyle = '#333'; ctx.fillRect(en.x-10, en.y+40, 30, 40); ctx.fillRect(en.x+230, en.y+40, 30, 40);
@@ -220,7 +226,27 @@ function draw() {
 }
 
 function createExplosion(x,y,c,n) { for(let i=0; i<n; i++) state.particles.push({x, y, vx:(Math.random()-0.5)*12, vy:(Math.random()-0.5)*12, life:20, color:c}); }
-function endGame(win) { state.active = false; let h = `<h1 style="color:${win?'#0f6':'#f00'}">${win?'CONGRATULATIONS!':'GAME OVER'}</h1><button class="btn-retro" onclick="location.reload()">RESTART</button>`; document.getElementById('gameOver').innerHTML = h; document.getElementById('gameOver').style.display = 'flex'; }
+
+function saveScore(name, score) {
+    let scores = JSON.parse(localStorage.getItem('earthDefenderScores') || '[]');
+    scores.push({name, score});
+    scores.sort((a,b) => b.score - a.score);
+    scores = scores.slice(0, 5);
+    localStorage.setItem('earthDefenderScores', JSON.stringify(scores));
+    return scores;
+}
+
+function endGame(win) { 
+    state.active = false; 
+    const highScores = saveScore(state.pilotName, state.score);
+    let hsHtml = highScores.map((s,i) => `<div>${i+1}. ${s.name} - ${s.score}</div>`).join('');
+    let h = `<h1 style="color:${win?'#0f6':'#f00'}">${win?'MISSION CLEAR!':'SHIP DESTROYED'}</h1>
+             <div style="color:#fff; margin-bottom:10px;">FINAL SCORE: ${state.score}</div>
+             <div class="high-score-table"><span style="color:#0f6">[ HALL OF FAME ]</span><br>${hsHtml}</div>
+             <button class="btn-retro" onclick="location.reload()">PLAY AGAIN</button>`; 
+    document.getElementById('gameOver').innerHTML = h; document.getElementById('gameOver').style.display = 'flex'; 
+}
+
 function loop() { update(); draw(); if(state.active) requestAnimationFrame(loop); }
 </script>
 </body>
