@@ -3,22 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Earth Defender - High Scores Edition</title>
+    <title>Earth Defender - D&G Games</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-        body { margin: 0; padding: 0; background: #000; color: #0f6; font-family: 'Press Start 2P', cursive; display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; overflow: hidden; touch-action: none; }
-        #frame { width: 100%; height: 100%; display: flex; flex-direction: column; background: #000; }
-        .main-title { text-align: center; font-size: 14px; padding: 5px; border-bottom: 1px solid #0f6; flex-shrink: 0; }
-        header { display: flex; flex-wrap: wrap; gap: 2px; padding: 5px; font-size: 7px; justify-content: space-around; border-bottom: 1px solid #0f6; flex-shrink: 0; background: rgba(0, 20, 0, 0.5); }
-        .stat-item { padding: 3px; }
+        body { margin: 0; background: #000; color: #0f6; font-family: 'Press Start 2P', cursive; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; touch-action: none; }
+        #frame { width: 950px; height: 850px; border: 4px solid #0f6; position: relative; display: flex; flex-direction: column; background: #000; max-width: 100vw; max-height: 100vh; box-sizing: border-box; }
+        .main-title { text-align: center; font-size: 18px; padding: 15px; border-bottom: 2px solid #0f6; }
+        header { display: flex; gap: 10px; padding: 10px; font-size: 8px; justify-content: space-around; border-bottom: 2px solid #0f6; flex-wrap: wrap; }
+        .stat-item { border: 1px solid #0f6; padding: 5px; border-radius: 5px; min-width: 80px; text-align: center; }
         #uiLives { color: #ff0000; }
         #gamearea { flex: 1; position: relative; overflow: hidden; background: #000; }
-        canvas { display: block; width: 100%; height: 100%; touch-action: none; }
-        footer { display: flex; justify-content: center; gap: 10px; padding: 5px; border-top: 1px solid #0f6; flex-shrink: 0; }
-        .btn-retro { background: #000; color: #0f6; border: 1px solid #0f6; padding: 5px 10px; font-family: inherit; font-size: 8px; cursor: pointer; }
-        .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; text-align: center; }
-        input { background: #000; border: 1px solid #0f6; color: #0f6; padding: 10px; text-align: center; font-family: inherit; margin-bottom: 10px; outline: none; }
-        #hsList { font-size: 10px; color: #ff0; margin: 15px 0; line-height: 1.6; }
+        canvas { display: block; width: 100%; height: 100%; }
+        footer { display: flex; justify-content: center; gap: 15px; padding: 10px; border-top: 2px solid #0f6; background: #000; width: 100%; box-sizing: border-box; }
+        .btn-retro { background: #000; color: #0f6; border: 2px solid #0f6; padding: 8px 12px; font-family: inherit; font-size: 9px; cursor: pointer; }
+        .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; text-align: center; padding: 20px; }
+        input { background: #000; border: 2px solid #0f6; color: #0f6; padding: 10px; text-align: center; font-family: inherit; margin-bottom: 10px; outline: none; width: 200px; }
+        .instructions-box { border: 1px dashed #0f6; padding: 15px; margin-top: 20px; font-size: 8px; line-height: 1.6; color: #fff; width: 300px; }
+        .logo-img { width: 180px; margin-bottom: 20px; border: 2px solid #0f6; padding: 5px; background: #111; }
+        #touchControls { position: absolute; bottom: 20px; left: 0; right: 0; display: none; justify-content: space-between; padding: 0 20px; pointer-events: none; z-index: 50; }
+        .d-pad { display: grid; grid-template-columns: 50px 50px 50px; gap: 5px; pointer-events: auto; }
+        .t-btn { width: 50px; height: 50px; background: rgba(0, 255, 102, 0.2); border: 2px solid #0f6; color: #0f6; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 12px; user-select: none; }
+        .fire-btn { width: 80px; height: 80px; border-radius: 40px; background: rgba(255, 0, 0, 0.3); border: 3px solid #f00; color: #f00; font-weight: bold; pointer-events: auto; }
+        @media (max-width: 1000px) { #frame { width: 100vw; height: 100vh; border: none; } #touchControls { display: flex; } }
     </style>
 </head>
 <body>
@@ -26,29 +32,34 @@
 <div id="frame">
     <div class="main-title">🚀 EARTH DEFENDER 🚀</div>
     <header>
-        <div class="stat-item">P:<span id="uiName">---</span></div>
-        <div class="stat-item">SCR:<span id="uiScore">0</span></div>
-        <div class="stat-item">LVL:<span id="uiLevel">1/40</span></div>
-        <div class="stat-item">HP:<span id="uiLives">❤️❤️❤️</span></div>
-        <div class="stat-item">WPN:<span id="uiWeapon">SINGLE</span></div>
+        <div class="stat-item">PILOT: <span id="uiName">---</span></div>
+        <div class="stat-item">SCORE: <span id="uiScore">0</span></div>
+        <div class="stat-item">LVL: <span id="uiLevel">1/40</span></div>
+        <div class="stat-item">LIVES: <span id="uiLives">❤️❤️❤️</span></div>
     </header>
-    
     <div id="gamearea">
         <canvas id="gameCanvas" width="950" height="600"></canvas>
         <div id="menu" class="overlay">
+            <img src="Designer.png" alt="D&G GAMES" class="logo-img">
             <input type="text" id="nameInput" placeholder="ENTER NAME" maxlength="10">
-            <button class="btn-retro" onclick="startGame()">LAUNCH MISSION</button>
+            <button class="btn-retro" onclick="startGame()">START MISSION</button>
+            <div class="instructions-box">
+                • POW: WEAPON (MAX: PLASMA SHELL)<br>
+                • HELPERS: TWO DRONES WITH ROCKETS
+            </div>
         </div>
-        <div id="gameOver" class="overlay" style="display:none">
-            <h1 id="endStatus" style="color:#f00">GAME OVER</h1>
-            <div id="hsList"></div>
-            <button class="btn-retro" onclick="location.reload()">RESTART</button>
+        <div id="gameOver" class="overlay" style="display:none"></div>
+        <div id="touchControls">
+            <div class="d-pad">
+                <div></div><div class="t-btn" id="btnUp">▲</div><div></div>
+                <div class="t-btn" id="btnLeft">◀</div><div class="t-btn" id="btnDown">▼</div><div class="t-btn" id="btnRight">▶</div>
+            </div>
+            <div class="fire-zone"><div class="t-btn fire-btn" id="btnFire">FIRE</div></div>
         </div>
     </div>
-
     <footer>
         <button class="btn-retro" onclick="isPaused = !isPaused">PAUSE</button>
-        <button class="btn-retro" onclick="location.reload()">RELOAD</button>
+        <button class="btn-retro" onclick="location.reload()">RESTART</button>
     </footer>
 </div>
 
@@ -56,245 +67,162 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let isPaused = false, warping = false;
+let state = { active: false, score: 0, level: 1, lives: 3, weapon: 0, shield: 0, enemiesRemaining: 0, bossSpawned: false, player: { x: 450, y: 500 }, companionL: { x: 400, y: 500 }, companionR: { x: 500, y: 500 }, companionsActive: false, bullets: [], enemyBullets: [], particles: [], powerups: [], stars: [], keys: {} };
 
-let isPaused = false, warping = false, isTouching = false;
-let state = {
-    active: false, score: 0, level: 1, lives: 3, weapon: 0,
-    enemiesRemaining: 0, shield: 0, bossSpawned: false,
-    player: { x: 450, y: 500 },
-    bullets: [], enemyBullets: [], enemies: [], particles: [], powerups: [], stars: [], keys: {}
-};
+function playSound(f, t, d, v) { if (audioCtx.state === 'suspended') return; const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.type = t; o.frequency.setValueAtTime(f, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + d); g.gain.setValueAtTime(v, audioCtx.currentTime); o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + d); }
+function startMusic() { let notes = [261, 329, 392, 523, 392, 329]; let i = 0; setInterval(() => { if(state.active && !isPaused) { playSound(notes[i], 'triangle', 0.2, 0.03); i = (i + 1) % notes.length; } }, 200); }
+
+window.onkeydown = e => { state.keys[e.code] = true; if(e.code === 'KeyP') isPaused = !isPaused; };
+window.onkeyup = e => state.keys[e.code] = false;
+const setupT = (id, k) => { const el = document.getElementById(id); el.addEventListener('touchstart', (e) => { e.preventDefault(); state.keys[k] = true; }); el.addEventListener('touchend', (e) => { e.preventDefault(); state.keys[k] = false; }); };
+setupT('btnUp','ArrowUp'); setupT('btnDown','ArrowDown'); setupT('btnLeft','ArrowLeft'); setupT('btnRight','ArrowRight'); setupT('btnFire','Space');
 
 for(let i=0; i<80; i++) state.stars.push({x: Math.random()*950, y: Math.random()*600, s: Math.random()*3+1});
 
-window.onkeydown = e => state.keys[e.code] = true;
-window.onkeyup = e => state.keys[e.code] = false;
+function startGame() { document.getElementById('uiName').innerText = document.getElementById('nameInput').value || "Pilot"; document.getElementById('menu').style.display = 'none'; state.active = true; if (audioCtx.state === 'suspended') audioCtx.resume(); startMusic(); startLevel(); loop(); }
 
-function updateTouch(e) {
-    if(!state.active || isPaused) return;
-    const rect = canvas.getBoundingClientRect();
-    const touch = e.touches[0];
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    state.player.x = (touch.clientX - rect.left) * scaleX - 20;
-    state.player.y = (touch.clientY - rect.top) * scaleY - 30;
-}
+function startLevel() { warping = false; state.bossSpawned = false; state.enemies = []; state.enemyBullets = []; state.powerups = []; state.bullets = []; state.player.y = 500; state.enemiesRemaining = (state.level % 5 === 0) ? 1 : 5 + (state.level * 2); }
 
-canvas.addEventListener('touchstart', (e) => { e.preventDefault(); isTouching = true; updateTouch(e); }, {passive: false});
-canvas.addEventListener('touchmove', (e) => { e.preventDefault(); updateTouch(e); }, {passive: false});
-canvas.addEventListener('touchend', () => { isTouching = false; }, {passive: false});
-
-function playShootSound() {
-    const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
-    osc.type = 'triangle'; osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1);
-    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-}
-
-function playExplodeSound() {
-    const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
-    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, audioCtx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + 0.3);
-    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-    gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.start(); osc.stop(audioCtx.currentTime + 0.3);
-}
-
-function startMusic() {
-    const notes = [110, 123, 130, 146, 110, 123, 164, 146];
-    let step = 0;
-    function playStep() {
-        if (!state.active) return;
-        if (!isPaused) {
-            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
-            osc.type = 'sine'; osc.frequency.setValueAtTime(notes[step % notes.length], audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.5);
-            step++;
-        }
-        setTimeout(playStep, 400);
-    }
-    playStep();
-}
-
-function createExplosion(x, y, color, count = 25) {
-    playExplodeSound();
-    for(let i=0; i<count; i++) {
-        state.particles.push({ x: x, y: y, vx: (Math.random()-0.5)*12, vy: (Math.random()-0.5)*12, life: 40, color: color });
-    }
-}
-
-function startGame() {
-    document.getElementById('uiName').innerText = document.getElementById('nameInput').value || "P1";
-    document.getElementById('menu').style.display = 'none';
-    state.active = true;
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    startMusic();
-    startLevel();
-    loop();
-}
-
-function startLevel() {
-    warping = false; state.bossSpawned = false; state.enemies = []; state.enemyBullets = [];
-    state.player.y = 500;
-    state.enemiesRemaining = 5 + (state.level * 2);
-    if(state.level % 5 === 0) state.enemiesRemaining = 1;
-}
-
-function fire() {
-    const p = state.player; playShootSound();
-    if(state.weapon === 0) state.bullets.push({x: p.x+18, y: p.y, vy: -12});
-    else if(state.weapon === 1) state.bullets.push({x: p.x+5, y: p.y, vy: -12}, {x: p.x+32, y: p.y, vy: -12});
-    else if(state.weapon === 2) state.bullets.push({x: p.x+18, y: p.y, vy: -12}, {x: p.x, y: p.y+10, vy: -10, vx:-2}, {x: p.x+36, y: p.y+10, vy: -10, vx:2});
-    else state.bullets.push({x: p.x+18, y: p.y, vy: -20, laser: true});
+function spawnEnemy() {
+    let type = 'ufo', hp = 1, ph = Math.random()*6;
+    let diffBoost = 1.5 + (state.level * 0.08);
+    if(state.level >= 3 && Math.random() < 0.4) { type = 'heavy'; hp = 4; }
+    if(state.level >= 9 && Math.random() < 0.2) { type = 'asteroid'; hp = 2; }
+    state.enemies.push({ x: Math.random()*850+50, y: -60, s: (1.5+(state.level*0.1)) * diffBoost, hp, mhp: hp, type, boss: false, phase: ph });
 }
 
 function update() {
     if(!state.active || isPaused) return;
-    if(warping) {
-        state.player.y -= 15;
-        if(state.player.y < -100) { if(state.level >= 40) { winGame(); return; } state.level++; startLevel(); }
-        return;
-    }
+    if(warping) { state.player.y -= 15; if(state.player.y < -100) { if(state.level >= 40) { endGame(true); return; } state.level++; startLevel(); } return; }
+
+    if(state.keys['ArrowLeft'] && state.player.x > 0) state.player.x -= 7;
+    if(state.keys['ArrowRight'] && state.player.x < 910) state.player.x += 7;
+    if(state.keys['ArrowUp'] && state.player.y > 0) state.player.y -= 7;
+    if(state.keys['ArrowDown'] && state.player.y < 540) state.player.y += 7;
     
-    if((state.keys['Space'] || isTouching) && Date.now() - (state.lastFire || 0) > 180) { 
-        fire(); state.lastFire = Date.now(); 
+    if(state.keys['Space'] && Date.now() - (state.lastF || 0) > 180) { 
+        const p = state.player;
+        if(state.weapon === 0) state.bullets.push({x: p.x+18, y: p.y, vy: -12});
+        else if(state.weapon === 1) { state.bullets.push({x: p.x, y: p.y, vy: -12}); state.bullets.push({x: p.x+36, y: p.y, vy: -12}); }
+        else if(state.weapon === 2) { state.bullets.push({x: p.x-10, y: p.y+10, vy: -12}); state.bullets.push({x: p.x+18, y: p.y, vy: -12}); state.bullets.push({x: p.x+46, y: p.y+10, vy: -12}); }
+        else if(state.weapon === 3) state.bullets.push({x: p.x+18, y: p.y, vy: -18, laser: true});
+        else if(state.weapon === 4) { state.bullets.push({x: p.x, y: p.y, vy: -18, laser: true}); state.bullets.push({x: p.x+36, y: p.y, vy: -18, laser: true}); }
+        else { state.bullets.push({x: p.x+15, y: p.y, vy: -15, shell: true}); playSound(150, 'sine', 0.1, 0.05); }
+        playSound(600,'square',0.05,0.02); state.lastF = Date.now(); 
     }
-    
-    if(state.shield > 0) state.shield--;
+
+    if(state.level >= 5) state.companionsActive = true;
+    if(state.companionsActive) {
+        state.companionL.x += (state.player.x - 60 - state.companionL.x) * 0.1;
+        state.companionL.y += (state.player.y + 20 - state.companionL.y) * 0.1;
+        state.companionR.x += (state.player.x + 80 - state.companionR.x) * 0.1;
+        state.companionR.y += (state.player.y + 20 - state.companionR.y) * 0.1;
+
+        if(Date.now() - (state.lastCompF || 0) > 600) {
+            state.bullets.push({x: state.companionL.x+10, y: state.companionL.y, vy: -10, shell: true});
+            state.bullets.push({x: state.companionR.x+10, y: state.companionR.y, vy: -10, shell: true});
+            state.lastCompF = Date.now();
+        }
+    }
 
     if(state.level % 5 === 0) {
-        if(!state.bossSpawned && state.enemies.length === 0) {
-            state.enemies.push({ x: 350, y: -150, s: 2, hp: state.level * 15, mhp: state.level * 15, boss: true, d: 1 });
+        if(!state.bossSpawned) {
+            let bL = state.level / 5;
+            state.enemies.push({ x: 350, y: -150, hp: 180 * bL, mhp: 180 * bL, boss: true, d: 1, fireRate: (0.03 + (bL * 0.015)) * 1.5, bLvl: bL });
             state.bossSpawned = true;
         }
-    } else {
-        if(state.enemiesRemaining > state.enemies.length && state.enemies.length < 6) {
-            if(Math.random() < 0.04) state.enemies.push({ x: Math.random()*850, y: -50, s: 2+(state.level*0.2), hp: 1, boss: false });
+    } else if(state.enemiesRemaining > state.enemies.filter(e=>!e.isMinion).length && state.enemies.length < 5) spawnEnemy();
+
+    for(let i = state.enemies.length - 1; i >= 0; i--) {
+        let en = state.enemies[i];
+        if(en.boss) {
+            if(en.y < 60) en.y += 0.8; en.x += (2 + state.level/8) * en.d; if(en.x > 700 || en.x < 0) en.d *= -1;
+            if(Math.random() < en.fireRate) { state.enemyBullets.push({x: en.x+45, y: en.y+85, vy: 5.5 + (en.bLvl*0.7)}); state.enemyBullets.push({x: en.x+205, y: en.y+85, vy: 5.5 + (en.bLvl*0.7)}); }
+            if(Math.random() < 0.02 * en.bLvl) state.enemies.push({ x: en.x + 125, y: en.y + 80, s: 3.8, hp: 1, type: 'ufo', isMinion: true, phase: Math.random()*6 });
+        } else {
+            en.y += en.s; if(en.type === 'heavy') en.x = 425 + Math.sin(en.y*0.005 + en.phase)*400; else en.x += Math.sin(en.y*0.05 + en.phase)*2;
+            if(en.y > 650) { state.enemies.splice(i, 1); continue; }
+            if(Math.abs(en.x - state.player.x) < 40 && Math.abs(en.y - state.player.y) < 40) {
+                 if(state.shield > 0) state.shield -= 1; 
+                 else { createExplosion(state.player.x + 20, state.player.y + 20, '#f00', 40); state.lives--; state.player.y = 500; playSound(100, 'sawtooth', 0.3, 0.2); }
+                 if(state.lives <= 0) endGame(false);
+            }
+        }
+        if(en.hp <= 0) {
+            state.score += en.boss ? 2000 : 100;
+            if(Math.random() < 0.15) { let t = ['POW', 'SHD', 'LIFE'][Math.floor(Math.random()*3)]; state.powerups.push({x: en.x, y: en.y, t}); }
+            createExplosion(en.x+(en.boss?125:25), en.y+25, '#0f6', 20); state.enemies.splice(i, 1); if(!en.isMinion) state.enemiesRemaining--;
         }
     }
 
-    state.enemies.forEach((en, i) => {
-        if(en.boss) {
-            if(en.y < 60) en.y += 1; en.x += (3 + (state.level/10)) * en.d;
-            if(en.x > 700 || en.x < 0) en.d *= -1;
-            if(Math.random() < 0.05) state.enemyBullets.push({x: en.x+125, y: en.y+80, vy: 5+(state.level/10)});
-        } else {
-            en.y += en.s; if(en.y > 600) { en.y = -50; en.x = Math.random()*850; }
-        }
-        let dist = en.boss ? 80 : 35;
-        if(Math.abs(en.x+(en.boss?125:20)-(state.player.x+20)) < dist && Math.abs(en.y+(en.boss?50:20)-(state.player.y+30)) < dist) {
-            if(state.shield <= 0) { state.lives--; createExplosion(state.player.x+20, state.player.y+30, '#f00', 50); if(state.lives <= 0) endGame(); state.shield = 100; }
-        }
+    state.bullets = state.bullets.filter(b => {
+        b.y += b.vy; state.enemies.forEach(en => { if(b.x > en.x && b.x < en.x+(en.boss?250:50) && b.y < en.y+(en.boss?100:50)) { en.hp -= b.shell ? 4 : (b.laser ? 2 : 1); if(b.shell) createExplosion(b.x, b.y, '#f0f', 5); if(!b.laser) b.y = -100; } });
+        return b.y > -50;
     });
 
-    state.bullets.forEach((b, bi) => {
-        b.y += b.vy; b.x += (b.vx || 0);
-        state.enemies.forEach((en, ei) => {
-            let hit = b.x > en.x && b.x < en.x+(en.boss?250:40) && b.y < en.y+(en.boss?100:30);
-            if(hit) {
-                en.hp--; if(!b.laser) state.bullets.splice(bi, 1);
-                if(en.hp <= 0) {
-                    createExplosion(en.x+(en.boss?125:20), en.y+(en.boss?50:15), en.boss?'#f0f':'#0f6');
-                    state.score += en.boss ? 2000 : 100;
-                    if(Math.random() < 0.08) state.powerups.push({x: en.x, y: en.y, t: Math.random() < 0.7 ? 'P' : 'S'});
-                    state.enemies.splice(ei, 1); state.enemiesRemaining--;
-                }
-            }
-        });
-        if(b.y < -50) state.bullets.splice(bi, 1);
+    state.enemyBullets = state.enemyBullets.filter(eb => {
+        eb.y += 6; let hit = Math.abs(eb.x-(state.player.x+20)) < 30 && Math.abs(eb.y-state.player.y) < 30;
+        if(hit) { if(state.shield > 0) state.shield -= 20; else { createExplosion(state.player.x + 20, state.player.y + 20, '#f00', 40); state.lives--; state.player.y = 500; } if(state.lives <= 0) endGame(false); }
+        return eb.y < 650 && !hit;
     });
 
-    state.enemyBullets.forEach((eb, ebi) => {
-        eb.y += eb.vy;
-        if(Math.abs(eb.x - (state.player.x+20)) < 25 && Math.abs(eb.y - (state.player.y+30)) < 25) {
-            if(state.shield <= 0) { state.lives--; createExplosion(state.player.x+20, state.player.y+30, '#f00', 40); if(state.lives <= 0) endGame(); state.shield = 100; }
-            state.enemyBullets.splice(ebi, 1);
-        }
-        if(eb.y > 650) state.enemyBullets.splice(ebi, 1);
+    state.powerups = state.powerups.filter(p => {
+        p.y += 3; let hit = Math.abs(p.x - state.player.x) < 50 && Math.abs(p.y - state.player.y) < 50;
+        if(hit) { if(p.t === 'POW') state.weapon++; if(p.t === 'SHD') state.shield = 100; if(p.t === 'LIFE') state.lives = Math.min(state.lives + 1, 5); playSound(900, 'sine', 0.2, 0.1); }
+        return p.y < 650 && !hit;
     });
 
-    state.powerups.forEach((p, i) => {
-        p.y += 3;
-        if(Math.abs(p.x - state.player.x) < 50 && Math.abs(p.y - state.player.y) < 50) {
-            if(p.t === 'P') {
-                if(state.weapon >= 3) state.weapon = 0;
-                else state.weapon++;
-            } else {
-                state.shield = 400;
-            }
-            state.powerups.splice(i, 1);
-        }
-    });
-
-    state.particles.forEach((p, i) => { p.x += p.vx; p.y += p.vy; p.life--; if(p.life <= 0) state.particles.splice(i, 1); });
+    state.particles = state.particles.filter(p => { p.x += p.vx; p.y += p.vy; p.life--; return p.life > 0; });
     if(state.enemiesRemaining <= 0 && state.enemies.length === 0 && !warping) warping = true;
     state.stars.forEach(s => { s.y += warping ? 20 : s.s; if(s.y > 600) s.y = 0; });
-    updateUI();
+    document.getElementById('uiScore').innerText = state.score; document.getElementById('uiLevel').innerText = state.level + "/40"; document.getElementById('uiLives').innerText = "❤️".repeat(Math.max(0, state.lives));
 }
 
-function updateUI() {
-    document.getElementById('uiScore').innerText = state.score;
-    document.getElementById('uiLevel').innerText = state.level;
-    document.getElementById('uiLives').innerText = "❤️".repeat(Math.max(0, state.lives));
-    document.getElementById('uiWeapon').innerText = ["SINGLE", "DOUBLE", "TRIPLE", "LASER"][state.weapon];
+function drawRocket(x, y, scale, color) {
+    ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(x + (20*scale), y);
+    ctx.quadraticCurveTo(x + (40*scale), y + (20*scale), x + (40*scale), y + (45*scale));
+    ctx.lineTo(x, y + (45*scale)); ctx.quadraticCurveTo(x, y + (20*scale), x + (20*scale), y); ctx.fill();
 }
 
 function draw() {
     ctx.fillStyle = '#000'; ctx.fillRect(0,0,950,600);
     ctx.fillStyle = '#fff'; state.stars.forEach(s => ctx.fillRect(s.x, s.y, 2, 2));
-    if(state.shield > 0) { ctx.strokeStyle = '#0cf'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(state.player.x+20, state.player.y+30, 45, 0, Math.PI*2); ctx.stroke(); }
-    ctx.fillStyle = '#0f6'; ctx.beginPath(); ctx.moveTo(state.player.x+20, state.player.y); ctx.lineTo(state.player.x+40, state.player.y+45); ctx.lineTo(state.player.x+30, state.player.y+38); ctx.lineTo(state.player.x+10, state.player.y+38); ctx.lineTo(state.player.x, state.player.y+45); ctx.fill();
-    ctx.fillStyle = Math.random() > 0.5 ? '#f60' : '#ff0'; ctx.fillRect(state.player.x+16, state.player.y+40, 8, warping?30:12);
+    
+    drawRocket(state.player.x, state.player.y, 1, '#0f6');
+    if(state.shield > 0) { ctx.strokeStyle = '#0ff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(state.player.x+20, state.player.y+22, 45, 0, 7); ctx.stroke(); }
+    
+    if(state.companionsActive) {
+        drawRocket(state.companionL.x, state.companionL.y, 0.5, '#f0f');
+        drawRocket(state.companionR.x, state.companionR.y, 0.5, '#f0f');
+    }
+
     state.enemies.forEach(en => {
-        ctx.fillStyle = en.boss ? '#f0f' : '#f04'; ctx.beginPath(); ctx.ellipse(en.x+(en.boss?125:20), en.y+(en.boss?50:15), en.boss?120:20, en.boss?40:10, 0, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#0ff'; ctx.beginPath(); ctx.arc(en.x+(en.boss?125:20), en.y+(en.boss?40:10), en.boss?40:10, 0, Math.PI, true); ctx.fill();
-        if(en.boss) { ctx.fillStyle = '#fff'; ctx.fillRect(en.x, en.y-20, (en.hp/en.mhp)*250, 8); }
+        if (en.boss) {
+            ctx.fillStyle = '#333'; ctx.fillRect(en.x-10, en.y+40, 30, 40); ctx.fillRect(en.x+230, en.y+40, 30, 40);
+            ctx.fillStyle = '#555'; ctx.fillRect(en.x+35, en.y+75, 25, 25); ctx.fillRect(en.x+190, en.y+75, 25, 25);
+            ctx.fillStyle = '#777'; ctx.beginPath(); ctx.moveTo(en.x, en.y+20); ctx.lineTo(en.x+250, en.y+20); ctx.lineTo(en.x+230, en.y+90); ctx.lineTo(en.x+20, en.y+90); ctx.closePath(); ctx.fill();
+            ctx.fillStyle = '#222'; ctx.beginPath(); ctx.arc(en.x+125, en.y+40, 45, 0, Math.PI, true); ctx.fill();
+            ctx.fillStyle = (Date.now() % 400 < 200) ? '#f00' : '#400'; ctx.beginPath(); ctx.arc(en.x+80, en.y+45, 8, 0, 7); ctx.arc(en.x+170, en.y+45, 8, 0, 7); ctx.fill();
+            ctx.fillStyle = '#333'; ctx.fillRect(en.x, en.y-25, 250, 8); ctx.fillStyle = en.hp < (en.mhp*0.3) ? '#f00' : '#0f6'; ctx.fillRect(en.x, en.y-25, Math.max(0, (en.hp/en.mhp)*250), 8);
+        } else {
+            if(en.type === 'asteroid') { ctx.fillStyle = '#666'; ctx.beginPath(); ctx.arc(en.x+25, en.y+25, 25, 0, 7); ctx.fill(); }
+            else { ctx.fillStyle = en.type === 'heavy' ? '#0f0' : '#f00'; ctx.beginPath(); ctx.ellipse(en.x+25, en.y+25, 30, 12, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#0ff'; ctx.beginPath(); ctx.arc(en.x+25, en.y+20, 12, 0, Math.PI, true); ctx.fill(); }
+        }
     });
-    state.enemyBullets.forEach(eb => { ctx.fillStyle = '#ff0'; ctx.beginPath(); ctx.arc(eb.x, eb.y, 5, 0, Math.PI*2); ctx.fill(); });
-    state.powerups.forEach(p => { 
-        ctx.fillStyle = p.t==='P' ? '#ff0' : '#0cf'; ctx.fillRect(p.x, p.y, 35, 35); 
-        ctx.fillStyle = '#000'; ctx.font = 'bold 20px Arial'; ctx.fillText(p.t, p.x+10, p.y+26);
-    });
-    state.bullets.forEach(b => { ctx.fillStyle = b.laser ? '#0ff' : '#fff'; ctx.fillRect(b.x, b.y, b.laser?8:4, b.laser?40:15); });
-    state.particles.forEach(p => { ctx.fillStyle = p.color; ctx.globalAlpha = p.life / 40; ctx.fillRect(p.x, p.y, 3, 3); });
-    ctx.globalAlpha = 1;
+
+    state.powerups.forEach(p => { ctx.font = 'bold 10px "Press Start 2P"'; ctx.fillStyle = p.t==='LIFE'?'#f00':(p.t==='POW'?'#f0f':'#0ff'); ctx.fillText(p.t, p.x, p.y+20); });
+    state.bullets.forEach(b => { ctx.fillStyle = b.shell ? '#f0f' : (b.laser ? '#0ff' : '#fff'); if(b.shell) { ctx.beginPath(); ctx.arc(b.x, b.y, 8, 0, 7); ctx.fill(); } else ctx.fillRect(b.x, b.y, b.laser?6:4, b.laser?30:10); });
+    state.enemyBullets.forEach(eb => { ctx.fillStyle = '#ff0'; ctx.beginPath(); ctx.arc(eb.x, eb.y, 5, 0, 7); ctx.fill(); });
+    state.particles.forEach(p => { ctx.fillStyle = p.color; ctx.globalAlpha = p.life/15; ctx.fillRect(p.x, p.y, 2, 2); ctx.globalAlpha = 1; });
 }
 
-// HIGH SCORE LOGIC
-function saveHS() {
-    let hs = JSON.parse(localStorage.getItem("ED_Scores") || "[]");
-    hs.push({n: document.getElementById('uiName').innerText, s: state.score});
-    hs.sort((a,b) => b.s - a.s);
-    hs = hs.slice(0, 5);
-    localStorage.setItem("ED_Scores", JSON.stringify(hs));
-    renderHS(hs);
-}
+function createExplosion(x,y,c,n) { for(let i=0; i<n; i++) state.particles.push({x, y, vx:(Math.random()-0.5)*12, vy:(Math.random()-0.5)*12, life:20, color:c}); }
 
-function renderHS(list) {
-    document.getElementById('hsList').innerHTML = "TOP SCORES:<br>" + 
-        list.map((item, i) => `${i+1}. ${item.n} - ${item.s}`).join("<br>");
-}
-
-function endGame() { 
+function endGame(win) { 
     state.active = false; 
-    saveHS(); 
-    document.getElementById('gameOver').style.display = 'flex'; 
-    isTouching = false; 
-}
-
-function winGame() { 
-    state.active = false; 
-    document.getElementById('endStatus').innerText = "VICTORY!"; 
-    saveHS(); 
-    document.getElementById('gameOver').style.display = 'flex'; 
-    isTouching = false; 
+    let h = `<h1 style="color:${win?'#0f6':'#f00'}">${win?'CONGRATULATIONS!':'GAME OVER'}</h1><button class="btn-retro" onclick="location.reload()">RESTART</button>`; 
+    document.getElementById('gameOver').innerHTML = h; document.getElementById('gameOver').style.display = 'flex'; 
 }
 
 function loop() { update(); draw(); if(state.active) requestAnimationFrame(loop); }
