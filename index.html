@@ -18,9 +18,14 @@
         .btn-retro { background: #000; color: #0f6; border: 2px solid #0f6; padding: 8px 12px; font-family: inherit; font-size: 9px; cursor: pointer; margin-top: 10px; }
         .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; text-align: center; padding: 20px; }
         input { background: #000; border: 2px solid #0f6; color: #0f6; padding: 10px; text-align: center; font-family: inherit; margin-bottom: 10px; outline: none; width: 200px; }
-        .instructions-box { border: 1px dashed #0f6; padding: 15px; margin-top: 15px; font-size: 7.5px; line-height: 1.8; color: #fff; width: 340px; background: rgba(0, 255, 102, 0.05); }
+        .instructions-box { border: 1px dashed #0f6; padding: 15px; margin: 15px auto 0; font-size: 7.5px; line-height: 1.8; color: #fff; max-width: 340px; background: rgba(0, 255, 102, 0.05); text-align: left; }
         .high-score-table { font-size: 8px; color: #ff0; margin-top: 15px; line-height: 1.5; }
         .logo-img { width: 180px; margin-bottom: 20px; border: 2px solid #0f6; padding: 5px; background: #111; }
+        #introVideo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; z-index: 200; background: #000; display: none; }
+        #startScreen { position: absolute; inset: 0; z-index: 201; background: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; }
+        .click-hint { color: #0f6; font-size: 12px; margin-top: 30px; animation: blink 1.5s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .menu-content { position: relative; z-index: 2; }
         @media (max-width: 1000px) { #frame { width: 100vw; height: 100vh; border: none; } }
     </style>
 </head>
@@ -36,17 +41,26 @@
     </header>
     <div id="gamearea">
         <canvas id="gameCanvas" width="950" height="600"></canvas>
-        <div id="menu" class="overlay">
+        <div id="startScreen" onclick="playIntro()">
             <img src="Designer.png" alt="D&G GAMES" class="logo-img">
-            <input type="text" id="nameInput" placeholder="ENTER NAME" maxlength="10">
-            <button class="btn-retro" onclick="startGame()">START MISSION</button>
-            <div class="instructions-box">
-                <span style="color: #0f6;">[ INSTRUCTIONS ]</span><br>
-                • TOUCH/MOUSE: MOVE & AUTO-FIRE<br>
-                • KEYS: ARROWS TO MOVE / SPACE TO FIRE<br>
-                • POW: LEVEL UP WEAPON<br>
-                • SHD: INVINCIBLE FOR 10 SECONDS<br>
-                • DRONES: UNLOCKED AT LEVEL 5
+            <div class="click-hint">CLICK ANYWHERE TO START</div>
+        </div>
+        <video id="introVideo" playsinline>
+            <source src="DG_Games_animation.mp4" type="video/mp4">
+        </video>
+        <div id="menu" class="overlay" style="display:none">
+            <div class="menu-content">
+                <img src="Designer.png" alt="D&G GAMES" class="logo-img">
+                <input type="text" id="nameInput" placeholder="ENTER NAME" maxlength="10">
+                <button class="btn-retro" onclick="startGame()">START MISSION</button>
+                <div class="instructions-box">
+                    <span style="color: #0f6;">[ INSTRUCTIONS ]</span><br>
+                    • TOUCH/MOUSE: MOVE & AUTO-FIRE<br>
+                    • KEYS: ARROWS TO MOVE / SPACE TO FIRE<br>
+                    • POW: LEVEL UP WEAPON<br>
+                    • SHD: INVINCIBLE FOR 10 SECONDS<br>
+                    • DRONES: UNLOCKED AT LEVEL 5
+                </div>
             </div>
         </div>
         <div id="gameOver" class="overlay" style="display:none"></div>
@@ -63,6 +77,19 @@ const ctx = canvas.getContext('2d');
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 let isPaused = false, warping = false;
 let state = { active: false, score: 0, level: 1, lives: 3, weapon: 0, shieldTime: 0, enemiesRemaining: 0, bossSpawned: false, player: { x: 450, y: 500 }, companionL: { x: 400, y: 500 }, companionR: { x: 500, y: 500 }, companionsActive: false, bullets: [], enemyBullets: [], particles: [], powerups: [], stars: [], keys: {} };
+
+// Video intro handler
+const introVideo = document.getElementById('introVideo');
+introVideo.addEventListener('ended', function() {
+    this.style.display = 'none';
+    document.getElementById('menu').style.display = 'flex';
+});
+
+function playIntro() {
+    document.getElementById('startScreen').style.display = 'none';
+    introVideo.style.display = 'block';
+    introVideo.play();
+}
 
 function handleTouch(e) {
     if (!state.active || isPaused || warping) return;
@@ -158,10 +185,20 @@ function update() {
         } else {
             en.y += en.s; if(en.type === 'heavy') en.x = 425 + Math.sin(en.y*0.005 + en.phase)*400; else en.x += Math.sin(en.y*0.05 + en.phase)*2;
             if(en.y > 650) { state.enemies.splice(i, 1); continue; }
+            // Enemies shoot (except asteroids)
+            if(en.type !== 'asteroid' && Math.random() < 0.02 + (state.level * 0.003)) {
+                state.enemyBullets.push({x: en.x+25, y: en.y+40, vy: 4 + (state.level * 0.2)});
+            }
             if(Math.abs(en.x - state.player.x) < 40 && Math.abs(en.y - state.player.y) < 40) {
-                 if(state.shieldTime > 0) continue; 
-                 createExplosion(state.player.x + 20, state.player.y + 20, '#f00', 40); state.lives--; state.player.y = 500; playSound(100, 'sawtooth', 0.3, 0.2);
+                 if(state.shieldTime > 0) { state.enemies.splice(i, 1); continue; }
+                 createExplosion(state.player.x + 20, state.player.y + 20, '#f00', 40); 
+                 state.lives--; 
+                 state.player.y = 500; 
+                 playSound(100, 'sawtooth', 0.3, 0.2);
+                 state.shieldTime = 2000; // 2 seconds invincibility after hit
+                 state.enemies.splice(i, 1); // Remove enemy after collision
                  if(state.lives <= 0) endGame(false);
+                 continue;
             }
         }
         if(en.hp <= 0) {
@@ -178,7 +215,13 @@ function update() {
 
     state.enemyBullets = state.enemyBullets.filter(eb => {
         eb.y += 6; let hit = Math.abs(eb.x-(state.player.x+20)) < 30 && Math.abs(eb.y-state.player.y) < 30;
-        if(hit) { if(state.shieldTime <= 0) { createExplosion(state.player.x + 20, state.player.y + 20, '#f00', 40); state.lives--; state.player.y = 500; } if(state.lives <= 0) endGame(false); }
+        if(hit && state.shieldTime <= 0) { 
+            createExplosion(state.player.x + 20, state.player.y + 20, '#f00', 40); 
+            state.lives--; 
+            state.player.y = 500;
+            state.shieldTime = 2000; // 2 seconds invincibility after hit
+            if(state.lives <= 0) endGame(false);
+        }
         return eb.y < 650 && !hit;
     });
 
@@ -251,4 +294,3 @@ function loop() { update(); draw(); if(state.active) requestAnimationFrame(loop)
 </script>
 </body>
 </html>
-
